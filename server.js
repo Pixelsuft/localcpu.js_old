@@ -146,7 +146,7 @@ function mousemove_handler(delta_x, delta_y) {
 var space_count = 0;
 
 function text_update_row(row) {
-  if(is_graphic)
+  if (is_graphic)
     return false;
   if (typeof needs.changed_text == 'undefined')
     needs.changed_text = {};
@@ -192,20 +192,16 @@ function text_update_row(row) {
       i++;
       offset += 3;
 
-      if(row === cursor_row)
-      {
-          if(i === cursor_col)
-          {
-              break;
-          }
-          else if(i === cursor_col + 1)
-          {
-              needs.cursor_bg = bg;
-              needs.cursor_fg = fg;
-              needs.cursor_x = cursor_col;
-              needs.cursor_y = cursor_row;
-              break;
-          }
+      if (row === cursor_row) {
+        if (i === cursor_col) {
+          break;
+        } else if (i === cursor_col + 1) {
+          needs.cursor_bg = bg;
+          needs.cursor_fg = fg;
+          needs.cursor_x = cursor_col;
+          needs.cursor_y = cursor_row;
+          break;
+        }
       }
     }
   }
@@ -213,9 +209,11 @@ function text_update_row(row) {
 };
 
 function data_func(msg) {
-  if(msg.move_x)
-  {
+  if (msg.move_x) {
     mousemove_handler(msg.move_x, msg.move_y);
+  }
+  if (msg.mouse_downs) {
+    e.bus.send("mouse-click", [msg.mouse_downs[0], msg.mouse_downs[1], msg.mouse_downs[2]]);
   }
   return needs;
 }

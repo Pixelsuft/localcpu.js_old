@@ -46,6 +46,7 @@ mouse_x, mouse_y = 360, 200
 mouse_locked = False
 cursor_x, cursor_y = 0, 0
 cursor_bg, cursor_fg = (0, 0, 0), (255, 255, 255)
+ldown, mdown, rdown = False, False, False
 cursor = a.mouse.get_cursor()
 empty_cursor = a.cursors.compile((
     "        ",
@@ -61,9 +62,7 @@ empty_cursor = a.cursors.compile((
 
 while running:
     msg = {
-        'from_python': True,
-        'move_x': 0,
-        'move_y': 0
+        'from_python': True
     }
     for e in a.event.get():
         if e.type == a.QUIT:
@@ -76,9 +75,24 @@ while running:
                 msg['move_y'] = y - mouse_y
                 mouse_x, mouse_y = half_w, half_h
                 a.mouse.set_pos(half_w, half_h)
+        elif e.type == a.MOUSEBUTTONDOWN:
+            if mouse_locked:
+                if e.button == 1:
+                    ldown = True
+                elif e.button == 2:
+                    mdown = True
+                elif e.button == 3:
+                    rdown = True
+                msg['mouse_downs'] = [ldown, mdown, rdown]
         elif e.type == a.MOUSEBUTTONUP:
             if mouse_locked:
-                pass
+                if e.button == 1:
+                    ldown = False
+                elif e.button == 2:
+                    mdown = False
+                elif e.button == 3:
+                    rdown = False
+                msg['mouse_downs'] = [ldown, mdown, rdown]
             elif e.button == 1:
                 mouse_locked = True
                 a.event.set_grab(True)
@@ -91,6 +105,8 @@ while running:
                     a.event.set_grab(False)
                     a.display.set_caption('localcpu.js')
                     a.mouse.set_cursor(a.SYSTEM_CURSOR_ARROW)
+                    ldown, mdown, rdown = False, False, False
+                    msg['mouse_downs'] = [False, False, False]
         else:
             print(e.type, dir(e))
     sock.send(encode_msg(msg))
