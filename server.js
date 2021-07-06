@@ -197,12 +197,15 @@ function init() {
     vga_bios: {
       url: "./v86/vgabios.bin"
     },
-    fda: {
+    /*fda: {
       url: "d:/images/boot.img"
-    },
+    },*/
     /*hda: {
       url: "./test_images/msdos.img",
     },*/
+    hda: {
+      url: "./test_images/dos.img",
+    },
     autostart: true
   });
   e.add_listener('screen-set-mode', function(data) {

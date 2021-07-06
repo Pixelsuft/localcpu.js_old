@@ -29,11 +29,13 @@ host_port = input(
     f'Enter host:port ({socket.gethostname()}:8124)\n').split(':')
 sock.connect((host_port[0].strip(), int(host_port[1].strip())))
 a.init()
+a.display.set_icon(a.image.load('icon.ico'))
+a.display.set_caption('localcpu.js')
 a.font.init()
 text_font = a.font.Font('text_mode_font.ttf', 15)
 text_font.set_bold(True)
 width, height = 720, 400
-resize_screen(width, height)
+screen = a.display.set_mode((width, height))
 is_graphic = False
 
 
@@ -45,8 +47,13 @@ while running:
         'from_python': True
     }
     sock.send(encode_msg(msg))
-    recv_len = int(sock.recv(10).decode('utf-8').strip()) + 110
-    needs = decode_msg(sock.recv(recv_len))
+    recv_len = int(sock.recv(10).decode('utf-8').strip()) + 10
+    sock_recv = b''
+    try:
+        sock_recv = sock.recv(recv_len)
+        needs = decode_msg(sock_recv)
+    except:
+        needs = decode_msg(sock_recv + sock.recv(5000))
     for i in needs:
         if i == 'clear_screen':
             screen.fill((0, 0, 0))
@@ -55,6 +62,10 @@ while running:
             resize_screen(width, height)
         elif i == 'is_graphic':
             is_graphic = needs[i]
+            if is_graphic:
+                pass
+            else:
+                resize_screen(720, 400)
         elif i == 'changed_text':
             for j in needs[i]:
                 cur = needs[i][j]
