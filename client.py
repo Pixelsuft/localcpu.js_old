@@ -30,7 +30,7 @@ host_port = input(
 sock.connect((host_port[0].strip(), int(host_port[1].strip())))
 a.init()
 a.font.init()
-text_font = a.font.SysFont('Segoe UI', 15)
+text_font = a.font.Font('text_mode_font.ttf', 15)
 text_font.set_bold(True)
 width, height = 720, 400
 resize_screen(width, height)
@@ -45,9 +45,7 @@ while running:
         'from_python': True
     }
     sock.send(encode_msg(msg))
-    recv_len = int(sock.recv(10).decode('utf-8').strip()) + 10
-    #  msg = decode_msg(sock.recv(recv_len))
-    #  needs = msg['needs']
+    recv_len = int(sock.recv(10).decode('utf-8').strip()) + 110
     needs = decode_msg(sock.recv(recv_len))
     for i in needs:
         if i == 'clear_screen':
@@ -63,6 +61,9 @@ while running:
                 split = j.split('x')
                 x = int(split[0]) * 9
                 y = int(split[1]) * 16
+                a.draw.rect(
+                    screen, (cur[1][0], cur[1][1], cur[1][2]), [x, y, 9, 16], False
+                )
                 screen.blit(
                     text_font.render(cur[0], False, (cur[2][0], cur[2][1], cur[2][2])), (x, y)
                 )

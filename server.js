@@ -37,7 +37,7 @@ var charmap_low = new Uint16Array([
 ]);
 
 
-var skip_first = false;
+var skip_first = true;
 
 
 var charmap = [],
@@ -54,6 +54,75 @@ for (var i = 0; i < 256; i++) {
   charmap[i] = String.fromCharCode(chr);
 }
 
+if (true) {
+  charmap[128] = 'А';
+  charmap[129] = 'Б';
+  charmap[130] = 'В';
+  charmap[131] = 'Г';
+  charmap[132] = 'Д';
+  charmap[133] = 'Е';
+  charmap[134] = 'Ж';
+  charmap[135] = 'З';
+  charmap[136] = 'И';
+  charmap[137] = 'Й';
+  charmap[138] = 'К';
+  charmap[139] = 'Л';
+  charmap[140] = 'М';
+  charmap[141] = 'Н';
+  charmap[142] = 'О';
+  charmap[143] = 'П';
+  charmap[144] = 'Р';
+  charmap[145] = 'С';
+  charmap[146] = 'Т';
+  charmap[147] = 'У';
+  charmap[148] = 'Ф';
+  charmap[149] = 'Х';
+  charmap[150] = 'Ц';
+  charmap[151] = 'Ч';
+  charmap[152] = 'Ш';
+  charmap[153] = 'Щ';
+  charmap[154] = 'Ъ';
+  charmap[155] = 'Ы';
+  charmap[156] = 'Ь';
+  charmap[157] = 'Э';
+  charmap[158] = 'Ю';
+  charmap[159] = 'Я';
+  charmap[160] = 'а';
+  charmap[161] = 'б';
+  charmap[162] = 'в';
+  charmap[163] = 'г';
+  charmap[164] = 'д';
+  charmap[165] = 'е';
+  charmap[166] = 'ж';
+  charmap[167] = 'з';
+  charmap[168] = 'и';
+  charmap[169] = 'й';
+  charmap[170] = 'к';
+  charmap[171] = 'л';
+  charmap[172] = 'м';
+  charmap[173] = 'н';
+  charmap[174] = 'о';
+  charmap[175] = 'п';
+  charmap[224] = 'р';
+  charmap[225] = 'с';
+  charmap[226] = 'т';
+  charmap[227] = 'у';
+  charmap[228] = 'ф';
+  charmap[229] = 'х';
+  charmap[230] = 'ц';
+  charmap[231] = 'ч';
+  charmap[232] = 'ш';
+  charmap[233] = 'щ';
+  charmap[234] = 'ъ';
+  charmap[235] = 'ы';
+  charmap[236] = 'ь';
+  charmap[237] = 'э';
+  charmap[238] = 'ю';
+  charmap[239] = 'я';
+  charmap[240] = 'Ё';
+  charmap[241] = 'ё';
+}
+
 const hex_to_rgb = hex =>
   hex.replace(/^#?([a-f\d])([a-f\d])([a-f\d])$/i, (m, r, g, b) => '#' + r + r + g + g + b + b)
   .substring(1).match(/.{2}/g)
@@ -63,6 +132,8 @@ function number_as_color(n) {
   n = n.toString(16);
   return hex_to_rgb("#" + Array(7 - n.length).join("0") + n);
 }
+
+var space_count = 0;
 
 function text_update_row(row) {
   if (typeof needs.changed_text == 'undefined')
@@ -78,17 +149,37 @@ function text_update_row(row) {
       text_mode_data[offset + 1] === bg_color &&
       text_mode_data[offset + 2] === fg_color) {
       const ascii = text_mode_data[offset];
-      if (charmap[ascii] !== ' ') {
-        needs.changed_text[i + 'x' + row] = [
-          charmap[ascii],
-          number_as_color(bg_color),
-          number_as_color(fg_color)
-        ];
+      if (skip_first) {
+        if (charmap[ascii] == 'S') { // (S)ea bios
+          skip_first = false;
+        } else {
+          i++;
+          offset += 3;
+          continue;
+        }
       }
+      if (row == 0) {
+        space_count = 0;
+      } else {
+        if (charmap[ascii] == ' ') {
+          space_count += 1;
+        } else space_count = 0;
+      }
+      if (space_count > 80) {
+        i++;
+        offset += 3;
+        continue;
+      }
+      needs.changed_text[i + 'x' + row] = [
+        charmap[ascii],
+        number_as_color(bg_color),
+        number_as_color(fg_color)
+      ];
       i++;
       offset += 3;
     }
   }
+  last_row = row;
 };
 
 function data_func(msg) {
@@ -101,14 +192,17 @@ function init() {
     memory_size: 4 * 1024 * 1024,
     vga_memory_size: 1 * 1024 * 1024,
     bios: {
-      url: "./v86/seabios.bin",
+      url: "./v86/seabios.bin"
     },
     vga_bios: {
-      url: "./v86/vgabios.bin",
+      url: "./v86/vgabios.bin"
     },
-    hda: {
+    fda: {
+      url: "d:/images/boot.img"
+    },
+    /*hda: {
       url: "./test_images/msdos.img",
-    },
+    },*/
     autostart: true
   });
   e.add_listener('screen-set-mode', function(data) {
