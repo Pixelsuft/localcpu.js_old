@@ -182,13 +182,31 @@ function text_update_row(row) {
         offset += 3;
         continue;
       }
+      const bg = number_as_color(bg_color);
+      const fg = number_as_color(fg_color);
       needs.changed_text[i + 'x' + row] = [
         charmap[ascii],
-        number_as_color(bg_color),
-        number_as_color(fg_color)
+        bg,
+        fg
       ];
       i++;
       offset += 3;
+
+      if(row === cursor_row)
+      {
+          if(i === cursor_col)
+          {
+              break;
+          }
+          else if(i === cursor_col + 1)
+          {
+              needs.cursor_bg = bg;
+              needs.cursor_fg = fg;
+              needs.cursor_x = cursor_col;
+              needs.cursor_y = cursor_row;
+              break;
+          }
+      }
     }
   }
   last_row = row;
@@ -280,10 +298,10 @@ function init() {
       const older = cursor_row;
       cursor_row = data[0];
       cursor_col = data[1];
+      needs.cursor_x = data[1];
+      needs.cursor_y = data[0];
       text_update_row(data[0]);
       text_update_row(older);
-      needs.cursor_x = data[0];
-      needs.cursor_y = data[1];
     }
   });
 }

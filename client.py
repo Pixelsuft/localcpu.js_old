@@ -44,6 +44,8 @@ screen = a.display.set_mode((width, height))
 is_graphic = False
 mouse_x, mouse_y = 360, 200
 mouse_locked = False
+cursor_x, cursor_y = 0, 0
+cursor_bg, cursor_fg = (0, 0, 0), (255, 255, 255)
 cursor = a.mouse.get_cursor()
 empty_cursor = a.cursors.compile((
     "        ",
@@ -126,6 +128,19 @@ while running:
             screen.blit(
                 text_font.render(cur[0], False, (cur[2][0], cur[2][1], cur[2][2])), (x, y)
             )
+    if 'cursor_x' in needs:
+        x, y = needs['cursor_x'], needs['cursor_y']
+        if 'cursor_bg' in needs:
+            bg, fg = needs['cursor_bg'], needs['cursor_fg']
+        a.draw.rect(
+            screen, cursor_bg, [cursor_x * 9, cursor_y * 16 + 14, 9, 2], False
+        )
+        cursor_x, cursor_y = x, y
+        if 'cursor_bg' in needs:
+            cursor_bg, cursor_fg = bg, fg
+        a.draw.rect(
+            screen, cursor_fg, [cursor_x * 9, cursor_y * 16 + 14, 9, 2], False
+        )
     a.display.flip()
 
 running = False
