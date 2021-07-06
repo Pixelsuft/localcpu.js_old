@@ -19,9 +19,12 @@ def encode_msg(msg_json):
     return json.dumps(msg_json).encode('utf-8')
 
 
-def resize_screen(width, height):
-    global screen
+def resize_screen(width1, height1):
+    global screen, half_w, half_h, width, height
+    width = width1
+    height = height1
     screen = a.display.set_mode((width, height))
+    half_w, half_h = int(width / 2), int(height / 2)
 
 
 sock = socket.socket()
@@ -35,17 +38,59 @@ a.font.init()
 text_font = a.font.Font('text_mode_font.ttf', 15)
 text_font.set_bold(True)
 width, height = 720, 400
+half_w, half_h = 360, 200
+cursor_x, cursor_y = 0, 0
 screen = a.display.set_mode((width, height))
 is_graphic = False
+mouse_x, mouse_y = 360, 200
+mouse_locked = False
+cursor = a.mouse.get_cursor()
+empty_cursor = a.cursors.compile((
+    "        ",
+    "        ",
+    "        ",
+    "        ",
+    "        ",
+    "        ",
+    "        ",
+    "        ",
+))
 
 
 while running:
-    for event in a.event.get():
-        if event.type == a.QUIT:
-            running = False
     msg = {
-        'from_python': True
+        'from_python': True,
+        'move_x': 0,
+        'move_y': 0
     }
+    for e in a.event.get():
+        if e.type == a.QUIT:
+            if not mouse_locked:
+                running = False
+        elif e.type == a.MOUSEMOTION:
+            if mouse_locked:
+                x, y = a.mouse.get_pos()
+                msg['move_x'] = x - mouse_x
+                msg['move_y'] = y - mouse_y
+                mouse_x, mouse_y = half_w, half_h
+                a.mouse.set_pos(half_w, half_h)
+        elif e.type == a.MOUSEBUTTONUP:
+            if mouse_locked:
+                pass
+            elif e.button == 1:
+                mouse_locked = True
+                a.event.set_grab(True)
+                a.display.set_caption('localcpu.js (Press ESCape to unlock your mouse)')
+                a.mouse.set_cursor((8, 8), (0, 0), *empty_cursor)
+        elif e.type == a.KEYDOWN:
+            if e.key == a.K_ESCAPE:
+                if mouse_locked:
+                    mouse_locked = False
+                    a.event.set_grab(False)
+                    a.display.set_caption('localcpu.js')
+                    a.mouse.set_cursor(a.SYSTEM_CURSOR_ARROW)
+        else:
+            print(e.type, dir(e))
     sock.send(encode_msg(msg))
     recv_len = int(sock.recv(10).decode('utf-8').strip()) + 10
     sock_recv = b''
@@ -54,30 +99,33 @@ while running:
         needs = decode_msg(sock_recv)
     except:
         needs = decode_msg(sock_recv + sock.recv(5000))
-    for i in needs:
-        if i == 'clear_screen':
-            screen.fill((0, 0, 0))
-        elif i == 'resize_screen':
-            width, height = needs[i][0], needs[i][1]
-            resize_screen(width, height)
-        elif i == 'is_graphic':
-            is_graphic = needs[i]
-            if is_graphic:
-                pass
-            else:
-                resize_screen(720, 400)
-        elif i == 'changed_text':
-            for j in needs[i]:
-                cur = needs[i][j]
-                split = j.split('x')
-                x = int(split[0]) * 9
-                y = int(split[1]) * 16
-                a.draw.rect(
-                    screen, (cur[1][0], cur[1][1], cur[1][2]), [x, y, 9, 16], False
-                )
-                screen.blit(
-                    text_font.render(cur[0], False, (cur[2][0], cur[2][1], cur[2][2])), (x, y)
-                )
+    if 'clear_screen' in needs:
+        screen.fill((0, 0, 0))
+    if 'resize_screen' in needs:
+        width, height = needs['resize_screen'][0], needs['resize_screen'][1]
+        resize_screen(width, height)
+    if 'is_graphic' in needs:
+        is_graphic = needs['is_graphic']
+        if is_graphic:
+            pass
+        else:
+            resize_screen(720, 400)
+    if 'cursor_x' in needs:
+        cursor_x = needs['cursor_x']
+    if 'cursor_y' in needs:
+        cursor_y = needs['cursor_y']
+    if 'changed_text' in needs:
+        for j in needs['changed_text']:
+            cur = needs['changed_text'][j]
+            split = j.split('x')
+            x = int(split[0]) * 9
+            y = int(split[1]) * 16
+            a.draw.rect(
+                screen, (cur[1][0], cur[1][1], cur[1][2]), [x, y, 9, 16], False
+            )
+            screen.blit(
+                text_font.render(cur[0], False, (cur[2][0], cur[2][1], cur[2][2])), (x, y)
+            )
     a.display.flip()
 
 running = False

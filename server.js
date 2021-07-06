@@ -4,7 +4,9 @@ var e;
 var is_graphic = false;
 var needs = {};
 var changed_rows = new Int8Array(25),
-  text_mode_data = new Int32Array(80 * 25 * 3);
+  text_mode_data = new Int32Array(80 * 25 * 3),
+  cursor_col = 0,
+  cursor_row = 0;
 const text_mode_width = 80,
   text_mode_height = 25;
 
@@ -38,6 +40,7 @@ var charmap_low = new Uint16Array([
 
 
 var skip_first = true;
+const sens = 0.15;
 
 
 var charmap = [],
@@ -133,9 +136,18 @@ function number_as_color(n) {
   return hex_to_rgb("#" + Array(7 - n.length).join("0") + n);
 }
 
+function mousemove_handler(delta_x, delta_y) {
+  delta_x = delta_x * sens;
+  delta_y = delta_y * -sens;
+
+  e.bus.send("mouse-delta", [delta_x, delta_y]);
+}
+
 var space_count = 0;
 
 function text_update_row(row) {
+  if(is_graphic)
+    return false;
   if (typeof needs.changed_text == 'undefined')
     needs.changed_text = {};
   var offset = 3 * row * text_mode_width,
@@ -183,6 +195,10 @@ function text_update_row(row) {
 };
 
 function data_func(msg) {
+  if(msg.move_x)
+  {
+    mousemove_handler(msg.move_x, msg.move_y);
+  }
   return needs;
 }
 
@@ -259,7 +275,17 @@ function init() {
       text_update_row(data[0]);
     }
   });
-
+  e.add_listener("screen-update-cursor", function(data) {
+    if (data[0] !== cursor_row || data[1] !== cursor_col) {
+      const older = cursor_row;
+      cursor_row = data[0];
+      cursor_col = data[1];
+      text_update_row(data[0]);
+      text_update_row(older);
+      needs.cursor_x = data[0];
+      needs.cursor_y = data[1];
+    }
+  });
 }
 
 function close() {
