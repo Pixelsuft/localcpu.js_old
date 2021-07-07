@@ -35,6 +35,64 @@ def fix_color(color):
     return (color[0] + 85, color[1] + 85, color[2])
 
 
+def to_keyboard_code(c):
+    if c == a.K_a:
+        return 0x1E
+    elif c == a.K_b:
+        return 0x30
+    elif c == a.K_c:
+        return 0x2E
+    elif c == a.K_d:
+        return 0x20
+    elif c == a.K_e:
+        return 0x12
+    elif c == a.K_f:
+        return 0x21
+    elif c == a.K_g:
+        return 0x22
+    elif c == a.K_h:
+        return 0x23
+    elif c == a.K_i:
+        return 0x17
+    elif c == a.K_j:
+        return 0x24
+    elif c == a.K_k:
+        return 0x25
+    elif c == a.K_l:
+        return 0x26
+    elif c == a.K_m:
+        return 0x32
+    elif c == a.K_n:
+        return 0x31
+    elif c == a.K_o:
+        return 0x18
+    elif c == a.K_p:
+        return 0x19
+    elif c == a.K_q:
+        return 0x10
+    elif c == a.K_r:
+        return 0x13
+    elif c == a.K_s:
+        return 0x1F
+    elif c == a.K_t:
+        return 0x14
+    elif c == a.K_u:
+        return 0x16
+    elif c == a.K_v:
+        return 0x2F
+    elif c == a.K_w:
+        return 0x11
+    elif c == a.K_x:
+        return 0x2D
+    elif c == a.K_y:
+        return 0x15
+    elif c == a.K_z:
+        return 0x2C
+    else:
+        print('Unknown keyboard_code:', c)
+    return None
+
+
 sock = socket.socket()
 host = socket.gethostname()
 input_ = input(f'Enter host:port ({host}:8124)\n')
@@ -73,7 +131,7 @@ while running:
         'from_python': True
     }
     downs = []
-    ups= []
+    ups = []
     for e in a.event.get():
         if e.type == a.QUIT:
             if not mouse_locked:
@@ -117,12 +175,16 @@ while running:
                     ldown, mdown, rdown = False, False, False
                     msg['mouse_downs'] = [False, False, False]
                 else:
-                    pass
+                    keyboard_code = to_keyboard_code(e.key)
+                    if keyboard_code:
+                        downs.append(keyboard_code)
             elif e.key == a.K_ESCAPE:
                 downs.append(0x01)
         elif e.type == a.KEYUP:
-            if mouse_locked:
-                pass
+            if mouse_locked and not e.key == a.K_ESCAPE:
+                keyboard_code = to_keyboard_code(e.key)
+                if keyboard_code:
+                    ups.append(keyboard_code)
             elif e.key == a.K_ESCAPE:
                 ups.append(0x01)
         else:
@@ -146,9 +208,7 @@ while running:
         resize_screen(width, height)
     if 'is_graphic' in needs:
         is_graphic = needs['is_graphic']
-        if is_graphic:
-            pass
-        else:
+        if not is_graphic:
             resize_screen(720, 400)
     if 'cursor_x' in needs:
         cursor_x = needs['cursor_x']
