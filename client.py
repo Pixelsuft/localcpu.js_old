@@ -256,8 +256,6 @@ while running:
                     ups.append(keyboard_code)
             elif e.key == a.K_ESCAPE:
                 ups.append(0x01)
-        else:
-            print(e.type, dir(e))
     if downs:
         msg['downs'] = downs
     if ups:
@@ -285,8 +283,7 @@ while running:
         cursor_y = needs['cursor_y']
     if is_graphic:
         if 'buffer' in needs:
-            img = a.image.load(BytesIO(bytes(needs['buffer']['data'])))
-            screen.blit(img, (0, 0))
+            screen.blit(a.image.load(BytesIO(bytes(needs['buffer']['data']))), (0, 0))
     else:
         if 'changed_text' in needs:
             for j in needs['changed_text']:
