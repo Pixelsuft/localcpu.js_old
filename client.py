@@ -27,6 +27,14 @@ def resize_screen(width1, height1):
     half_w, half_h = int(width / 2), int(height / 2)
 
 
+def fix_color(color):
+    if color[0] == color[2] or color[1] == color[2]:
+        return color
+    if color[0] == color[1] and color[0] == 0 and color[2] > 85:
+        return color
+    return (color[0] + 85, color[1] + 85, color[2])
+
+
 sock = socket.socket()
 host = socket.gethostname()
 input_ = input(f'Enter host:port ({host}:8124)\n')
@@ -137,16 +145,18 @@ while running:
             split = j.split('x')
             x = int(split[0]) * 9
             y = int(split[1]) * 16
+            bg = fix_color(cur[1])
+            fg = fix_color(cur[2])
             a.draw.rect(
-                screen, (cur[1][0], cur[1][1], cur[1][2]), [x, y, 9, 16], False
+                screen, bg, [x, y, 9, 16], False
             )
             screen.blit(
-                text_font.render(cur[0], False, (cur[2][0], cur[2][1], cur[2][2])), (x, y)
+                text_font.render(cur[0], False, fg), (x, y)
             )
     if 'cursor_x' in needs:
         x, y = needs['cursor_x'], needs['cursor_y']
         if 'cursor_bg' in needs:
-            bg, fg = needs['cursor_bg'], needs['cursor_fg']
+            bg, fg = fix_color(needs['cursor_bg']), fix_color(needs['cursor_fg'])
         a.draw.rect(
             screen, cursor_bg, [cursor_x * 9, cursor_y * 16 + 14, 9, 2], False
         )
