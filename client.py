@@ -72,6 +72,8 @@ while running:
     msg = {
         'from_python': True
     }
+    downs = []
+    ups= []
     for e in a.event.get():
         if e.type == a.QUIT:
             if not mouse_locked:
@@ -106,16 +108,29 @@ while running:
                 a.display.set_caption('localcpu.js (Press ESCape to unlock your mouse)')
                 a.mouse.set_cursor((8, 8), (0, 0), *empty_cursor)
         elif e.type == a.KEYDOWN:
-            if e.key == a.K_ESCAPE:
-                if mouse_locked:
+            if mouse_locked:
+                if e.key == a.K_ESCAPE:
                     mouse_locked = False
                     a.event.set_grab(False)
                     a.display.set_caption('localcpu.js')
                     a.mouse.set_cursor(a.SYSTEM_CURSOR_ARROW)
                     ldown, mdown, rdown = False, False, False
                     msg['mouse_downs'] = [False, False, False]
+                else:
+                    pass
+            elif e.key == a.K_ESCAPE:
+                downs.append(0x01)
+        elif e.type == a.KEYUP:
+            if mouse_locked:
+                pass
+            elif e.key == a.K_ESCAPE:
+                ups.append(0x01)
         else:
             print(e.type, dir(e))
+    if downs:
+        msg['downs'] = downs
+    if ups:
+        msg['ups'] = ups
     sock.send(encode_msg(msg))
     recv_len = int(sock.recv(10).decode('utf-8').strip()) + 10
     sock_recv = b''

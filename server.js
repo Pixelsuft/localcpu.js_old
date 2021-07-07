@@ -208,12 +208,37 @@ function text_update_row(row) {
   last_row = row;
 };
 
+function send_to_controller(code) {
+  e.bus.send("keyboard-code", code);
+}
+
 function data_func(msg) {
   if (msg.move_x) {
     mousemove_handler(msg.move_x, msg.move_y);
   }
   if (msg.mouse_downs) {
     e.bus.send("mouse-click", [msg.mouse_downs[0], msg.mouse_downs[1], msg.mouse_downs[2]]);
+  }
+  if (msg.downs) {
+    for (var i = 0; i < msg.downs.length; i++) {
+      if (msg.downs[i] > 0xFF) {
+        send_to_controller(msg.downs[i] >> 8);
+        send_to_controller(msg.downs[i] & 0xFF);
+      } else {
+        send_to_controller(msg.downs[i]);
+      }
+    }
+  }
+  if (msg.ups) {
+    for (var i = 0; i < msg.ups.length; i++) {
+      msg.ups[i] |= 0x80;
+      if (msg.ups[i] > 0xFF) {
+        send_to_controller(msg.ups[i] >> 8);
+        send_to_controller(msg.ups[i] & 0xFF);
+      } else {
+        send_to_controller(msg.ups[i]);
+      }
+    }
   }
   return needs;
 }
