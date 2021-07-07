@@ -88,8 +88,10 @@ def to_keyboard_code(c):
         return 0x15
     elif c == a.K_z:
         return 0x2C
+    elif c == a.K_0:
+        return 0x0B
     elif c >= a.K_0 and c <= a.K_9:
-        result = c - a.K_0
+        result = c - a.K_0 + 1
         if not result:
             result = 10
         return result
