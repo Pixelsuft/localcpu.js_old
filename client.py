@@ -153,19 +153,16 @@ while running:
             screen.blit(
                 text_font.render(cur[0], False, fg), (x, y)
             )
+    a.draw.rect(
+        screen, cursor_bg, [cursor_x * 9, cursor_y * 16 + 14, 9, 2], False
+    )
     if 'cursor_x' in needs:
-        x, y = needs['cursor_x'], needs['cursor_y']
+        cursor_x, cursor_y = needs['cursor_x'], needs['cursor_y']
         if 'cursor_bg' in needs:
-            bg, fg = fix_color(needs['cursor_bg']), fix_color(needs['cursor_fg'])
-        a.draw.rect(
-            screen, cursor_bg, [cursor_x * 9, cursor_y * 16 + 14, 9, 2], False
-        )
-        cursor_x, cursor_y = x, y
-        if 'cursor_bg' in needs:
-            cursor_bg, cursor_fg = bg, fg
-        a.draw.rect(
-            screen, cursor_fg, [cursor_x * 9, cursor_y * 16 + 14, 9, 2], False
-        )
+            cursor_bg, cursor_fg = fix_color(needs['cursor_bg']), fix_color(needs['cursor_fg'])
+    a.draw.rect(
+        screen, cursor_fg, [cursor_x * 9, cursor_y * 16 + 14, 9, 2], False
+    )
     a.display.flip()
 
 running = False
