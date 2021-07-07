@@ -28,8 +28,9 @@ def resize_screen(width1, height1):
 
 
 sock = socket.socket()
-host_port = input(
-    f'Enter host:port ({socket.gethostname()}:8124)\n').split(':')
+host = socket.gethostname()
+input_ = input(f'Enter host:port ({host}:8124)\n')
+host_port = input_.split(':') if input_ else (host, '8124')
 sock.connect((host_port[0].strip(), int(host_port[1].strip())))
 a.init()
 a.display.set_icon(a.image.load('icon.ico'))
@@ -42,7 +43,6 @@ half_w, half_h = 360, 200
 cursor_x, cursor_y = 0, 0
 screen = a.display.set_mode((width, height))
 is_graphic = False
-mouse_x, mouse_y = 360, 200
 mouse_locked = False
 cursor_x, cursor_y = 0, 0
 cursor_bg, cursor_fg = (0, 0, 0), (255, 255, 255)
@@ -71,9 +71,8 @@ while running:
         elif e.type == a.MOUSEMOTION:
             if mouse_locked:
                 x, y = a.mouse.get_pos()
-                msg['move_x'] = x - mouse_x
-                msg['move_y'] = y - mouse_y
-                mouse_x, mouse_y = half_w, half_h
+                msg['move_x'] = x - half_w
+                msg['move_y'] = y - half_h
                 a.mouse.set_pos(half_w, half_h)
         elif e.type == a.MOUSEBUTTONDOWN:
             if mouse_locked:
