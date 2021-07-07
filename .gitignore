@@ -1,2 +1,5 @@
 node_modules
 package-lock.json
+test.txt
+test.py
+__pycache__

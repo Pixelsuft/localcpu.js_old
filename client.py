@@ -1,7 +1,7 @@
 import socket
 import json
-import time
 import os
+from io import BytesIO
 
 os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = 'True'
 
@@ -20,10 +20,10 @@ def encode_msg(msg_json):
 
 
 def resize_screen(width1, height1):
-    global screen, half_w, half_h, width, height
+    global half_w, half_h, width, height
     width = width1
     height = height1
-    screen = a.display.set_mode((width, height))
+    a.display.set_mode((width, height))
     half_w, half_h = int(width / 2), int(height / 2)
 
 
@@ -283,30 +283,35 @@ while running:
         cursor_x = needs['cursor_x']
     if 'cursor_y' in needs:
         cursor_y = needs['cursor_y']
-    if 'changed_text' in needs:
-        for j in needs['changed_text']:
-            cur = needs['changed_text'][j]
-            split = j.split('x')
-            x = int(split[0]) * 9
-            y = int(split[1]) * 16
-            bg = fix_color(cur[1])
-            fg = fix_color(cur[2])
-            a.draw.rect(
-                screen, bg, [x, y, 9, 16], False
-            )
-            screen.blit(
-                text_font.render(cur[0], False, fg), (x, y)
-            )
-    a.draw.rect(
-        screen, cursor_bg, [cursor_x * 9, cursor_y * 16 + 14, 9, 2], False
-    )
-    if 'cursor_x' in needs:
-        cursor_x, cursor_y = needs['cursor_x'], needs['cursor_y']
-        if 'cursor_bg' in needs:
-            cursor_bg, cursor_fg = fix_color(needs['cursor_bg']), fix_color(needs['cursor_fg'])
-    a.draw.rect(
-        screen, cursor_fg, [cursor_x * 9, cursor_y * 16 + 14, 9, 2], False
-    )
+    if is_graphic:
+        if 'buffer' in needs:
+            img = a.image.load(BytesIO(bytes(needs['buffer']['data'])))
+            screen.blit(img, (0, 0))
+    else:
+        if 'changed_text' in needs:
+            for j in needs['changed_text']:
+                cur = needs['changed_text'][j]
+                split = j.split('x')
+                x = int(split[0]) * 9
+                y = int(split[1]) * 16
+                bg = fix_color(cur[1])
+                fg = fix_color(cur[2])
+                a.draw.rect(
+                    screen, bg, [x, y, 9, 16], False
+                )
+                screen.blit(
+                    text_font.render(cur[0], False, fg), (x, y)
+                )
+        a.draw.rect(
+            screen, cursor_bg, [cursor_x * 9, cursor_y * 16 + 14, 9, 2], False
+        )
+        if 'cursor_x' in needs:
+            cursor_x, cursor_y = needs['cursor_x'], needs['cursor_y']
+            if 'cursor_bg' in needs:
+                cursor_bg, cursor_fg = fix_color(needs['cursor_bg']), fix_color(needs['cursor_fg'])
+        a.draw.rect(
+            screen, cursor_fg, [cursor_x * 9, cursor_y * 16 + 14, 9, 2], False
+        )
     a.display.flip()
 
 running = False

@@ -1,4 +1,17 @@
 const V86Starter = require("./v86/libv86.js").V86Starter;
+const {
+  createCanvas,
+  loadImage
+} = require('canvas'); //npm install canvas
+var graphic_screen = createCanvas(720, 400);
+var graphic_context = graphic_screen.getContext('2d');
+
+
+function resize_canvas(w, h) {
+  graphic_screen = createCanvas(w, h);
+  graphic_context = graphic_screen.getContext('2d');
+}
+
 
 var e;
 var is_graphic = false;
@@ -6,7 +19,12 @@ var needs = {};
 var changed_rows = new Int8Array(25),
   text_mode_data = new Int32Array(80 * 25 * 3),
   cursor_col = 0,
-  cursor_row = 0;
+  cursor_row = 0,
+  graphic_image_data = graphic_context.createImageData(720, 400),
+  graphic_buffer = new Uint8Array(graphic_image_data.data.buffer),
+  graphic_buffer32 = new Int32Array(graphic_image_data.data.buffer),
+  graphical_mode_width = 720,
+  graphical_mode_height = 400;
 const text_mode_width = 80,
   text_mode_height = 25;
 
@@ -40,7 +58,7 @@ var charmap_low = new Uint16Array([
 
 
 var skip_first = true;
-const sens = 0.15;
+const sens = 0.2;
 
 
 var charmap = [],
@@ -246,8 +264,8 @@ function data_func(msg) {
 function init() {
   e = new V86Starter({
     wasm_path: "./v86/v86.wasm",
-    memory_size: 4 * 1024 * 1024,
-    vga_memory_size: 1 * 1024 * 1024,
+    memory_size: 16 * 1024 * 1024,
+    vga_memory_size: 2 * 1024 * 1024,
     bios: {
       url: "./v86/seabios.bin"
     },
@@ -258,16 +276,31 @@ function init() {
       url: "d:/images/boot.img"
     },*/
     /*hda: {
-      url: "./test_images/msdos.img",
+      url: "./test_images/msdos.img"
     },*/
-    hda: {
-      url: "./test_images/dos.img",
+    /*hda: {
+      url: "./test_images/dos.img"
+    },*/
+    /*hda: {
+      url: "./test_images/win31.img"
+    },*/
+    fda: {
+      url: "./test_images/windows1.img"
     },
     autostart: true
   });
+
+  var inter;
+
   e.add_listener('screen-set-mode', function(data) {
     needs.is_graphic = data;
     is_graphic = data;
+    if (is_graphic) {
+      inter = setInterval(update_graphical, 1000 / 60);
+    } else {
+      if (inter)
+        clearInterval(inter);
+    }
   });
   e.add_listener('screen-clear', function() {
     needs.clear_screen = true;
@@ -280,18 +313,19 @@ function init() {
   }
 
   e.add_listener('screen-set-size-graphical', function(data) {
+    resize_canvas(data[0], data[1]);
     needs.resize_screen = [data[0], data[1]];
-    /*graphic_image_data = graphic_context.createImageData(data[2], data[3]);
+    graphic_image_data = graphic_context.createImageData(data[2], data[3]);
     graphic_buffer = new Uint8Array(graphic_image_data.data.buffer);
     graphic_buffer32 = new Int32Array(graphic_image_data.data.buffer);
 
     graphical_mode_width = data[0];
     graphical_mode_height = data[1];
-    e.bus.send("screen-tell-buffer", [graphic_buffer32], [graphic_buffer32.buffer]);*/
+    e.bus.send("screen-tell-buffer", [graphic_buffer32], [graphic_buffer32.buffer]);
   });
 
   e.add_listener('screen-fill-buffer-end', function(data) {
-    /*data[0].forEach((layer) => {
+    data.forEach((layer) => {
       graphic_context.putImageData(
         graphic_image_data,
         layer.screen_x - layer.buffer_x,
@@ -302,7 +336,7 @@ function init() {
         layer.buffer_height
       );
     });
-    dataurl_to_file(graphic_screen.toDataURL(), 'screenshot.png');*/
+    needs.buffer = graphic_screen.toBuffer();
   });
 
   e.add_listener('screen-put-char', function(data) {
