@@ -88,6 +88,75 @@ def to_keyboard_code(c):
         return 0x15
     elif c == a.K_z:
         return 0x2C
+    elif c >= a.K_0 and c <= a.K_9:
+        result = c - a.K_0
+        if not result:
+            result = 10
+        return result
+    elif c == a.K_EQUALS:
+        return 0x0D
+    elif c == a.K_RETURN:
+        return 0x1C
+    elif c == a.K_BACKSPACE:
+        return 0x0E
+    elif c == a.K_LEFT:
+        return 0xE04B
+    elif c == a.K_DOWN:
+        return 0xE050
+    elif c == a.K_RIGHT:
+        return 0xE04D
+    elif c == a.K_UP:
+        return 0xE048
+    elif c == a.K_SPACE:
+        return 0x39
+    elif c == a.K_PAGEUP:
+        return 0xE04F
+    elif c == a.K_PAGEDOWN:
+        return 0xE051
+    elif c == a.K_DELETE:
+        return 0xE053
+    elif c >= a.K_F1 and c <= a.K_F12:
+        return 0x3B + (c - a.K_F1)
+    elif c == a.K_SLASH:
+        return 0x35
+    elif c == a.K_LALT:
+        return 0x38
+    elif c == a.K_RALT:
+        return 0xE038
+    elif c == a.K_LCTRL:
+        return 0x1D
+    elif c == a.K_RCTRL:
+        return 0xe01d
+    elif c == a.K_LSHIFT:
+        return 0x2A
+    elif c == a.K_RSHIFT:
+        return 0x36
+    elif c == a.K_EQUALS:
+        return 0x0D
+    elif c == a.K_SEMICOLON:
+        return 0x27
+    elif c == a.K_BACKSLASH:
+        return 0x28
+    elif c == a.K_COMMA:
+        return 0x33
+    elif c == a.K_PERIOD:
+        return 0x34
+    elif c == a.K_MINUS:
+        return 0x0C
+    elif c == a.K_RIGHTBRACKET:
+        return 0x1A
+    elif c == a.K_LEFTBRACKET:
+        return 0x1B
+    elif c == a.K_QUOTE:
+        return 0x28
+    elif c == a.K_BACKQUOTE:
+        return 0x29
+    elif c == a.K_TAB:
+        return 0x0F
+    elif c == 311:  # Left WIN
+        return 0xE05B
+    elif c == 312:  # Right WIN
+        return 0xE05B
     else:
         print('Unknown keyboard_code:', c)
     return None
