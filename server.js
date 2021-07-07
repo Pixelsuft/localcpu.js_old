@@ -264,8 +264,8 @@ function data_func(msg) {
 function init() {
   e = new V86Starter({
     wasm_path: "./v86/v86.wasm",
-    memory_size: 16 * 1024 * 1024,
-    vga_memory_size: 2 * 1024 * 1024,
+    memory_size: 64 * 1024 * 1024,
+    vga_memory_size: 4 * 1024 * 1024,
     bios: {
       url: "./v86/seabios.bin"
     },
