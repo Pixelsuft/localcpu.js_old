@@ -1,6 +1,7 @@
 import socket
 import json
 import os
+import base64
 from io import BytesIO
 
 os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = 'True'
@@ -285,7 +286,8 @@ while running:
         cursor_y = needs['cursor_y']
     if is_graphic:
         if 'buffer' in needs:
-            screen.blit(a.image.load(BytesIO(bytes(needs['buffer']['data']))), (0, 0))
+            # screen.blit(a.image.load(BytesIO(bytes(needs['buffer']['data']))), (0, 0))
+            screen.blit(a.image.load(BytesIO(base64.b64decode(needs['buffer'].encode()))), (0, 0))
     else:
         if 'changed_text' in needs:
             for j in needs['changed_text']:

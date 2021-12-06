@@ -336,7 +336,8 @@ function init() {
         layer.buffer_height
       );
     });
-    needs.buffer = graphic_screen.toBuffer();
+	needs.buffer = graphic_screen.toDataURL().slice(22);
+    //needs.buffer = graphic_screen.toBuffer();
   });
 
   e.add_listener('screen-put-char', function(data) {
